@@ -1,175 +1,73 @@
 import express from 'express'
 
 const app = express()
+import dotenv from "dotenv"
+dotenv.config()
+import mongoose from "mongoose";
 
+import { getHealth } from "./controllers/Health.js";
+import {
+    postPlant,
+    getPlants,
+    getPlantId,
+    putPlantId,
+    deletePlantId
+} from "./controllers/Plant.js";
+import { handlePageNotFound } from "./controllers/errors.js";
 app.use(express.json())
 
 const port = 5000
 
-const plants = [
-    {
-        "id":1,
-        "name": "Mango",
-        "category": "Fruit",
-        "image": "https://www.garden.eco/wp-content/uploads/2018/07/mango-seedling.jpg",
-        "price": 500,
-        "description": "Transform your garden with the charm of the Japanese Sweet Mango Plant, a Grafted Mango Tree standing elegantly at 2-3 feet. This All-Time Mango Hybrid brings the allure of the Baramasi Mango, infusing your space with the essence of Japanese sweetness."
-    },
-    {
-        "id":2,
-        "name": "Banana",
-        "category": "Fruit",
-        "image": "https://www.garden.eco/wp-content/uploads/2018/07/mango-seedling.jpg",
-        "price": 500,
-        "description": "Transform your garden with the charm of the Japanese Sweet Mango Plant, a Grafted Mango Tree standing elegantly at 2-3 feet. This All-Time Mango Hybrid brings the allure of the Baramasi Mango, infusing your space with the essence of Japanese sweetness."
-    },
-    {
-        "id":3,
-        "name": "Rose",
-        "category": "Flower",
-        "image": "https://www.garden.eco/wp-content/uploads/2018/07/mango-seedling.jpg",
-        "price": 500,
-        "description": "Transform your garden with the charm of the Japanese Sweet Mango Plant, a Grafted Mango Tree standing elegantly at 2-3 feet. This All-Time Mango Hybrid brings the allure of the Baramasi Mango, infusing your space with the essence of Japanese sweetness."
+// const plants = [
+//     {
+//         "id":1,
+//         "name": "Mango",
+//         "category": "Fruit",
+//         "image": "https://www.garden.eco/wp-content/uploads/2018/07/mango-seedling.jpg",
+//         "price": 500,
+//         "description": "Transform your garden with the charm of the Japanese Sweet Mango Plant, a Grafted Mango Tree standing elegantly at 2-3 feet. This All-Time Mango Hybrid brings the allure of the Baramasi Mango, infusing your space with the essence of Japanese sweetness."
+//     },
+//     {
+//         "id":2,
+//         "name": "Banana",
+//         "category": "Fruit",
+//         "image": "https://www.garden.eco/wp-content/uploads/2018/07/mango-seedling.jpg",
+//         "price": 500,
+//         "description": "Transform your garden with the charm of the Japanese Sweet Mango Plant, a Grafted Mango Tree standing elegantly at 2-3 feet. This All-Time Mango Hybrid brings the allure of the Baramasi Mango, infusing your space with the essence of Japanese sweetness."
+//     },
+//     {
+//         "id":3,
+//         "name": "Rose",
+//         "category": "Flower",
+//         "image": "https://www.garden.eco/wp-content/uploads/2018/07/mango-seedling.jpg",
+//         "price": 500,
+//         "description": "Transform your garden with the charm of the Japanese Sweet Mango Plant, a Grafted Mango Tree standing elegantly at 2-3 feet. This All-Time Mango Hybrid brings the allure of the Baramasi Mango, infusing your space with the essence of Japanese sweetness."
+//     }
+// ]
+
+const dbConnection = async () =>{
+    const conn = await mongoose.connect(process.env.MONGO_URL)
+  
+    if(conn){
+      console.log(`MongoDB connected...😉🤞 `)
     }
-]
-
-app.post("/plant", (req, res) => {
-    const {
-        name,
-        category,
-        image,
-        price,
-        description
-    } = req.body
-
-    if (!name) {
-        return res.json({
-            success: false,
-            data: null,
-            message: "Please provide a name for the plant"
-        })
-
+    else{
+      console.log(`MongoDB not connected 😟☹️`)
     }
-    if (!category) {
-        return res.json({
-            success: false,
-            data: null,
-            message: "Please provide a category for the plant"
-        })
-
-    }
-    if (!image) {
-        return res.json({
-            success: false,
-            data: null,
-            message: "Please provide a image for the plant"
-        })
-
-    }
-    if (!price) {
-        return res.json({
-            success: false,
-            data: null,
-            message: "Please provide a price for the plant"
-        })
-
-    }
-    if (!description) {
-        return res.json({
-            success: false,
-            data: null,
-            message: "Please provide a description for the plant"
-        })
-
-    }
-
-    const randomId = Math.round(Math.random() * 10000)
-
-    const newPlant = {
-        id: randomId,
-        name: name,
-        category: category,
-        image: image,
-        price: price,
-        description: description
-    }
-
-    plants.push(newPlant)
-
-    res.json({
-        success: true,
-        data: newPlant,
-        message: "Plant added successfully"
-    })
-})
-
-app.get('/plants', (req, res) => {
-    res.json({
-        success: true,
-        data: plants,
-        message: "All plants fetched Succesfully"
-
-    })
-})
-app.get('/plant/:id', (req, res) => {
-    const id = parseInt(req.params.id, 10)
-
-    const plant = plants.find((p) => p.id === id)
-
-    if (plant) {
-        res.json({
-            success: true,
-            data: plant,
-            message: "Plant fetched successfully"
-        })
-    } else {
-        res.json({
-            success: false,
-            data: null,
-            message: "Plant not found"
-        })
-    }
-})
-app.put('/plant/:id',(req,res)=>{
-    const {id} = req.params
-    const {name,category,image,price,description} = req.body
-    let index = -1
-    plants.forEach((plant, i)=>{
-        if(plant.id === id){
-            index = i
-            }
-    })
-
-    const newObj ={
-        id,
-        name,
-        category,
-        image,
-        price,
-        description
-    }
-    if(index==-1){
-        res.json({
-            success: false,
-            data: null,
-            message: `Plant not found for this ${id} index`
-            })
-    }
-    else
-    {
-        plants[index] = newObj
-        res.json({
-            success: true,
-            data: newObj,
-            message: "Plant updated successfully"
-            })
-        }
+  }
+  dbConnection();
 
 
-} )
-app.delete('/plant/:id',(req,res)=>{
-    
-})
+app.get("/Health", getHealth)
+app.post("/plant", postPlant)
+app.get("/plants", getPlants)
+app.get("/plant/:id", getPlantId)
+app.put("/plant/:id", putPlantId )
+app.delete("/plant/:id", deletePlantId)
+
+app.use("*", handlePageNotFound)
+
+const PORT = process.env.PORT|| 8000
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`)

@@ -4,6 +4,7 @@ const app = express()
 import dotenv from "dotenv"
 dotenv.config()
 import mongoose from "mongoose";
+import cors from "cors"
 
 import { getHealth } from "./controllers/Health.js";
 import {
@@ -67,7 +68,7 @@ app.delete("/plant/:id", deletePlantId)
 
 app.use("*", handlePageNotFound)
 
-const PORT = process.env.PORT|| 8000
+const PORT = process.env.PORT|| 5000
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`)
